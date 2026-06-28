@@ -1,0 +1,6 @@
+{
+  "compilerOptions": {
+    "moduleResolution": "bundler"
+  },
+  "exclude": ["node_modules", "dist"]
+}

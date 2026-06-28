@@ -1,0 +1,15 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+/* ... CSS variables for theming ... */
+
+:root {
+  --background: oklch(1 0 0);
+  /* ... CSS variables for light/dark modes ... */
+}
+
+@layer base {
+  * { @apply border-border outline-ring/50; }
+  body { @apply bg-background text-foreground; }
+}

@@ -1,0 +1,86 @@
+<!-- HTML Structure -->
+<!--JUST EXPERIMENTING-->
+<html>
+
+<head>
+    <style>
+        /* CSS Styling */
+        .hero-section {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 80px 20px;
+            overflow: hidden;
+        }
+
+        .photo-floating-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            /* Creates clean spacing between photos */
+            margin-top: 48px;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .photo-card {
+            position: relative;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            /* Initial soft shadow */
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            will-change: transform;
+        }
+
+        /* The Hovering Effect */
+        .photo-card:hover {
+            transform: translateY(-12px) scale(1.02);
+            /* Lifts up and expands slightly */
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.16);
+            /* Deepens shadow to mimic height */
+        }
+
+        .photo-card img {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            /* Prevents image distortion */
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <section class="hero-section">
+        <div class="hero-content">
+            <h1>Your Hero Title</h1>
+            <p>Engaging subtitle goes here.</p>
+        </div>
+
+        <div class="photo-floating-grid">
+            <div class="photo-card"><img
+                    src="https://camo.githubusercontent.com/5e45bc648dba68520ce949a53690af6bcef2880f84a1d46cbb1636649afd6d84/68747470733a2f2f796176757a63656c696b65722e6769746875622e696f2f73616d706c652d696d616765732f696d6167652d313032312e6a7067"
+                    alt="Description" loading="lazy"></div>
+            <div class="photo-card"><img
+                    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTdf7asCCcqOLnZrLovbgQDLQssGIn3AK-qkMOk4y6k3Q&s"
+                    alt="Description" loading="lazy"></div>
+            <div class="photo-card"><img
+                    src="https://c.pxhere.com/photos/8a/52/newzealand_mountcooknationalpark_mountcook_grandpacifictours_landscape_dawn_sunrise_aorakimountcook-178752.jpg!s2"
+                    alt="Description" loading="lazy"></div>
+            <div class="photo-card"><img
+                    src="https://c.pxhere.com/photos/8a/52/newzealand_mountcooknationalpark_mountcook_grandpacifictours_landscape_dawn_sunrise_aorakimountcook-178752.jpg!s2"
+                    alt="Description" loading="lazy"></div>
+            <div class="photo-card"><img
+                    src="https://c.pxhere.com/photos/8a/52/newzealand_mountcooknationalpark_mountcook_grandpacifictours_landscape_dawn_sunrise_aorakimountcook-178752.jpg!s2"
+                    alt="Description" loading="lazy"></div>
+            <div class="photo-card"><img
+                    src="https://c.pxhere.com/photos/8a/52/newzealand_mountcooknationalpark_mountcook_grandpacifictours_landscape_dawn_sunrise_aorakimountcook-178752.jpg!s2"
+                    alt="Description" loading="lazy"></div>
+        </div>
+    </section>
+</body>
+
+</html>
