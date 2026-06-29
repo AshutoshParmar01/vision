@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import { Link } from "react-router-dom"
 import { CanvasRevealEffectDemo3 } from "#components/features/backgrounds/background";
 import { Label } from "../../../ui/label"
 import { Input } from "../../../ui/input";
@@ -50,13 +51,15 @@ export function SignupFormDemo() {
                         <Label htmlFor="password">Password</Label>
                         <Input id="password" placeholder="••••••••" type="password" />
                     </LabelInputContainer>
-                    <button
-                        className="group/btn relative block h-10 w-full rounded-md bg-linear-to-br from-black to-neutral-600 font-medium text-white shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:bg-zinc-800 dark:from-zinc-900 dark:to-zinc-900 dark:shadow-[0px_1px_0px_0px_#27272a_inset,0px_-1px_0px_0px_#27272a_inset]"
+                    <Link
+                        to="/upload"
+                        className="group/btn relative flex items-center justify-center h-11 w-full rounded-md font-medium text-white transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 shadow-[0px_1px_0px_0px_rgba(255,255,255,0.1)_inset] bg-linear-to-r from-zinc-900 via-neutral-800 to-zinc-900 border border-white/8"
                         type="submit"
                     >
-                        Sign up &rarr;
+                        <span>Sign up &rarr;</span>
                         <BottomGradient />
-                    </button>
+                    </Link>
+
 
                     <div className="my-8 h-px w-full bg-linear-to-r from-transparent via-neutral-300 to-transparent dark:via-neutral-700" />
 

@@ -17,7 +17,7 @@ export function LampDemo() {
             icon : (
                 <IconHome className="h-full w-full text-neutral-500 dark:text-neutral-300" />
             ),
-            href : "#"
+            href : "/"
         },{
             title : "mail",
             icon : (
@@ -41,7 +41,7 @@ export function LampDemo() {
             icon : (
                 <IconUser className="h-full w-full text-neutral-500 dark:text-neutral-300"/> 
             ),
-            href : "#"
+            href : "/signup"
         }
     ]
   return (
