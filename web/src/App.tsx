@@ -1,9 +1,11 @@
-import { SignupFormDemo } from "#components/features/auth/components/signup"
+// import { SignupFormDemo } from "#components/features/auth/components/signup"
+import { LampDemo } from "#components/features/landingPage/hero"
 
 const App = () => {
   return (
     <div>
-      <SignupFormDemo />
+      {/* <SignupFormDemo /> */}
+      <LampDemo/>
     </div>
   )
 }
