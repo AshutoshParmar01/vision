@@ -9,6 +9,7 @@
       "@/*": ["./*"]
     },
     "moduleResolution": "bundler",
-    "resolvePackageJsonImports": true
+    "resolvePackageJsonImports": true,
+    "allowSyntheticDefaultImports" : true
   }
 }

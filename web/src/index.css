@@ -3,6 +3,11 @@
 @import "shadcn/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
+@variant dark (&:where(.dark, .dark *));
+
+::-webkit-scrollbar {
+  display: none;
+}
 
 @theme inline {
    --shadow-input:
