@@ -10,7 +10,7 @@ interface BackgroundProps {
 export function CanvasRevealEffectDemo3({ hovered }: BackgroundProps) {
   return (
     // Note: Removed mouse listeners from here, added pointer-events-none to prevent interaction lag
-    <div className="fixed inset-0 -z-10 h-screen w-screen flex flex-col lg:flex-row overflow-hidden items-center justify-center bg-linear-to-br from-black via-blue-950 to-gray-600 gap-4 pointer-events-none">
+    <div className="fixed inset-0 -z-10 h-screen w-screen flex flex-col lg:flex-row overflow-hidden items-center justify-center bg-linear-to-b from-black to-gray-600 gap-4 pointer-events-none">
       <AnimatePresence>
         {hovered && (
           <motion.div
