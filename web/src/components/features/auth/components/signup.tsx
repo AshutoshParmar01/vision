@@ -52,7 +52,7 @@ export function SignupFormDemo() {
                         <Input id="password" placeholder="••••••••" type="password" />
                     </LabelInputContainer>
                     <Link
-                        to="/upload"
+                        to="/gallery"
                         className="group/btn relative flex items-center justify-center h-11 w-full rounded-md font-medium text-white transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 shadow-[0px_1px_0px_0px_rgba(255,255,255,0.1)_inset] bg-linear-to-r from-zinc-900 via-neutral-800 to-zinc-900 border border-white/8"
                         type="submit"
                     >
