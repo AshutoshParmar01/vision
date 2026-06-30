@@ -3,6 +3,7 @@ import { SignupFormDemo } from "#components/features/auth/components/signup"
 import { LampDemo } from "#components/features/landingPage/hero"
 import { FileUploadDemo } from '#components/features/upload/upload'
 import Gallery from "#components/features/feed/gallery"
+import ProfilePage from '#components/features/account/ProfilePage'
 
 const App = () => {
   return (
@@ -15,6 +16,7 @@ const App = () => {
               <Route path="/signup" element = {<SignupFormDemo />} />
               <Route path="/upload" element = {<FileUploadDemo />} />
               <Route path="/gallery" element = {<Gallery />} />
+              <Route path="/profile" element = {<ProfilePage />} />
             </Routes>
           </main>
         </div>

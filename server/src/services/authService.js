@@ -6,7 +6,7 @@ const SALT_ROUNDS = 10;
 const JWT_SECRET = process.env.JWT_SECRET;
 
 const authenticate = async (req) => {
-    const { firstName, lastName, email, password } = req;
+    const { firstname, lastname, email, password } = req;
 
     try {
         const { data: existingUser, error } = await supabase
@@ -66,9 +66,9 @@ const authenticate = async (req) => {
                 {
                     email,
 
-                    firstname: firstName,
+                    firstname: firstname,
 
-                    lastname: lastName,
+                    lastname: lastname,
 
                     hashedpassword: hashedPassword,
                 },
