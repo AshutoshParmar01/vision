@@ -2,7 +2,6 @@ const supabase = require('../config/supabase')
 
 const profile = async (req) => {
     const email = req.email
-    console.log(email)
     try {
         const { data, error } = await supabase
             .from('users')

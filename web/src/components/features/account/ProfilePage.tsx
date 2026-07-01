@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 import {
   User,
   Mail,
@@ -22,20 +23,36 @@ interface UserPayload {
 }
 
 // Active user data explicitly typed to match your incoming JSON payload context
-const USER_DATA: UserPayload = {
-  email: "subhrabikiran@gmail.com",
-  firstname: "Subhra",
-  lastname: "Nayak",
-  hashedpassword: "$2b$10$uT/sgxUcG.pCBixATC6iA.PBhwqTiDlKoaLm42XleHqmptUNTUux.",
-  created_at: "2026-06-30T20:31:05.872592+00:00",
-  updated_at: "2026-06-30T20:31:05.872592+00:00"
-};
-
 type NavigationTab = "overview" | "security" | "preferences";
 
 const ProfilePage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<NavigationTab>("overview");
+  const [user, setUser] = useState<UserPayload | null>(null);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const authToken = localStorage.getItem("authToken");
+        console.log(authToken)
+        const response = await axios.get(
+          "http://localhost:5000/api/auth/me",
+          {
+            headers: {
+              Authorization: `Bearer ${authToken}`,
+            },
+          }
+        );
+        console.log(response)
+        setUser(response.data.data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
+    fetchUser();
+  }, []);
   // Helper formatting for your raw Supabase database timestamp string
   const formatDate = (dateString: string): string => {
     return new Date(dateString).toLocaleDateString("en-IN", {
@@ -44,6 +61,21 @@ const ProfilePage: React.FC = () => {
       day: "numeric",
     });
   };
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-zinc-950 flex items-center justify-center text-white">
+        Loading...
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-zinc-950 flex items-center justify-center text-red-500">
+        Failed to load profile.
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-50 antialiased flex flex-col font-sans">
@@ -73,11 +105,11 @@ const ProfilePage: React.FC = () => {
             </div>
             <div>
               <h1 className="text-xl md:text-2xl font-semibold tracking-tight">
-                {USER_DATA.firstname} {USER_DATA.lastname}
+                {user.firstname} {user.lastname}
               </h1>
               <p className="text-sm text-zinc-400 mt-1 flex items-center gap-1.5">
                 <Mail className="h-3.5 w-3.5 text-zinc-500" />
-                {USER_DATA.email}
+                {user.email}
               </p>
             </div>
           </div>
@@ -125,14 +157,14 @@ const ProfilePage: React.FC = () => {
                   <div className="bg-zinc-900/40 border border-zinc-900 p-4 rounded-xl flex items-center justify-between">
                     <div>
                       <p className="text-[10px] uppercase tracking-wider font-semibold text-zinc-500">Registration Date</p>
-                      <p className="text-sm font-medium mt-1 text-zinc-200">{formatDate(USER_DATA.created_at)}</p>
+                      <p className="text-sm font-medium mt-1 text-zinc-200">{formatDate(user.created_at)}</p>
                     </div>
                     <Calendar className="h-5 w-5 text-zinc-600" />
                   </div>
                   <div className="bg-zinc-900/40 border border-zinc-900 p-4 rounded-xl flex items-center justify-between">
                     <div>
                       <p className="text-[10px] uppercase tracking-wider font-semibold text-zinc-500">Last Token Activity</p>
-                      <p className="text-sm font-medium mt-1 text-zinc-200">{formatDate(USER_DATA.updated_at)}</p>
+                      <p className="text-sm font-medium mt-1 text-zinc-200">{formatDate(user.updated_at)}</p>
                     </div>
                     <Clock className="h-5 w-5 text-zinc-600" />
                   </div>
@@ -148,16 +180,16 @@ const ProfilePage: React.FC = () => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <label className="text-xs text-zinc-500 font-medium block mb-1.5">First Name</label>
-                        <input type="text" readOnly value={USER_DATA.firstname} className="w-full bg-zinc-950 border border-zinc-800 text-xs px-3 py-2 rounded-md text-zinc-300 focus:outline-none cursor-default" />
+                        <input type="text" readOnly value={user.firstname} className="w-full bg-zinc-950 border border-zinc-800 text-xs px-3 py-2 rounded-md text-zinc-300 focus:outline-none cursor-default" />
                       </div>
                       <div>
                         <label className="text-xs text-zinc-500 font-medium block mb-1.5">Last Name</label>
-                        <input type="text" readOnly value={USER_DATA.lastname} className="w-full bg-zinc-950 border border-zinc-800 text-xs px-3 py-2 rounded-md text-zinc-300 focus:outline-none cursor-default" />
+                        <input type="text" readOnly value={user.lastname} className="w-full bg-zinc-950 border border-zinc-800 text-xs px-3 py-2 rounded-md text-zinc-300 focus:outline-none cursor-default" />
                       </div>
                     </div>
                     <div>
                       <label className="text-xs text-zinc-500 font-medium block mb-1.5">Authorized Identity Email</label>
-                      <input type="text" readOnly value={USER_DATA.email} className="w-full bg-zinc-950 border border-zinc-800 text-xs px-3 py-2 rounded-md text-zinc-300 focus:outline-none cursor-default" />
+                      <input type="text" readOnly value={user.email} className="w-full bg-zinc-950 border border-zinc-800 text-xs px-3 py-2 rounded-md text-zinc-300 focus:outline-none cursor-default" />
                     </div>
                   </div>
                 </div>
@@ -172,7 +204,7 @@ const ProfilePage: React.FC = () => {
                 </div>
                 <div className="bg-zinc-950 border border-zinc-800 p-3.5 rounded-lg">
                   <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 block mb-1">Salted Bcrypt Password Signature</span>
-                  <code className="text-xs font-mono text-zinc-400 break-all select-all block">{USER_DATA.hashedpassword || "N/A"}</code>
+                  <code className="text-xs font-mono text-zinc-400 break-all select-all block">{user.hashedpassword || "N/A"}</code>
                 </div>
               </div>
             )}
