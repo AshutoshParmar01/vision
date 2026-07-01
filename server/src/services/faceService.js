@@ -4,22 +4,32 @@ const path = require("path");
 function extractFaces(imagePath) {
     return new Promise((resolve, reject) => {
 
-        // Absolute path to extract_faces.py
+        // Virtual Environment Python
+        const pythonExecutable = path.resolve(
+            __dirname,
+            "../../../python/venv/Scripts/python.exe"
+        );
+
+        // Python Script
         const scriptPath = path.resolve(
             __dirname,
             "../../../python/services/extract_faces.py"
         );
 
-        // Absolute path to the image
+        // Uploaded Image
         const absoluteImagePath = path.resolve(imagePath);
 
-        console.log("Python Script :", scriptPath);
-        console.log("Image Path    :", absoluteImagePath);
+        console.log("Python Executable :", pythonExecutable);
+        console.log("Python Script     :", scriptPath);
+        console.log("Image Path        :", absoluteImagePath);
 
-        const python = spawn("python", [
-            scriptPath,
-            absoluteImagePath
-        ]);
+        const python = spawn(
+            pythonExecutable,
+            [
+                scriptPath,
+                absoluteImagePath
+            ]
+        );
 
         let output = "";
         let error = "";
@@ -39,11 +49,13 @@ function extractFaces(imagePath) {
             }
 
             try {
+
                 const marker = "===JSON_START===";
 
                 const idx = output.indexOf(marker);
 
                 if (idx === -1) {
+                    console.log(output);
                     return reject("JSON marker not found");
                 }
 
@@ -52,9 +64,11 @@ function extractFaces(imagePath) {
                     .trim();
 
                 resolve(JSON.parse(json));
+
             } catch (err) {
                 reject(err);
             }
+
         });
 
     });
