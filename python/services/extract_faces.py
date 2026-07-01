@@ -31,6 +31,8 @@ for face in detected_faces:
 
     })
 
+print("===JSON_START===")
+
 print(
     json.dumps(
         {
