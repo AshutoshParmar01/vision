@@ -8,6 +8,8 @@ const router = express.Router();
 
 const supabase = require("../config/supabase");
 const { extractFaces } = require("../services/faceService");
+const { findOrCreatePerson } = require("../services/personService");
+const { cropFace } = require("../services/avatarService");
 const authMiddleware = require("../middlewares/authMiddleware");
 
 const upload = multer({
@@ -21,6 +23,7 @@ router.post(
     async (req, res) => {
 
         let tempPath = "";
+        let avatarPath = "";
 
         try {
 
@@ -32,18 +35,20 @@ router.post(
 
             const email = req.email;
 
-            const extension = req.file.originalname
-                .split(".")
-                .pop();
+            const extension =
+                req.file.originalname
+                    .split(".")
+                    .pop();
 
             const filename =
                 crypto.randomUUID() +
                 "." +
                 extension;
 
-            // -----------------------------
-            // Create uploads folder if needed
-            // -----------------------------
+            // ------------------------------------
+            // Temporary upload folder
+            // ------------------------------------
+
             const uploadDir = path.join(
                 __dirname,
                 "../../uploads"
@@ -55,9 +60,6 @@ router.post(
                 });
             }
 
-            // -----------------------------
-            // Save image temporarily
-            // -----------------------------
             tempPath = path.join(
                 uploadDir,
                 filename
@@ -68,9 +70,10 @@ router.post(
                 req.file.buffer
             );
 
-            // -----------------------------
-            // Upload image to Supabase Storage
-            // -----------------------------
+            // ------------------------------------
+            // Upload original image
+            // ------------------------------------
+
             const { error: uploadError } =
                 await supabase.storage
                     .from("pxephotos")
@@ -83,13 +86,9 @@ router.post(
                         }
                     );
 
-            if (uploadError) {
+            if (uploadError)
                 throw uploadError;
-            }
 
-            // -----------------------------
-            // Get Public URL
-            // -----------------------------
             const { data: publicData } =
                 supabase.storage
                     .from("pxephotos")
@@ -98,13 +97,15 @@ router.post(
             const publicUrl =
                 publicData.publicUrl;
 
-            // -----------------------------
-            // Insert into photos table
-            // -----------------------------
+            // ------------------------------------
+            // Store photo
+            // ------------------------------------
+
             const {
                 data: photo,
-                error: dbError
-            } = await supabase
+                error: photoError
+            } =
+            await supabase
                 .from("photos")
                 .insert({
                     email,
@@ -113,97 +114,192 @@ router.post(
                 .select()
                 .single();
 
-            if (dbError) {
-                throw dbError;
+            if (photoError)
+                throw photoError;
+
+            // ------------------------------------
+            // Detect faces
+            // ------------------------------------
+
+            const faceData =
+                await extractFaces(tempPath);
+
+            // ------------------------------------
+            // Avatar folder
+            // ------------------------------------
+
+            const avatarDir = path.join(
+                __dirname,
+                "../../avatars"
+            );
+
+            if (!fs.existsSync(avatarDir)) {
+                fs.mkdirSync(avatarDir, {
+                    recursive: true
+                });
             }
 
-            // -----------------------------
-            // Extract faces using Python
-            // -----------------------------
-            const faceData = await extractFaces(tempPath);
+            // ------------------------------------
+            // Process each face
+            // ------------------------------------
 
-            console.log("\n========== FACE DATA ==========");
-            console.log(faceData);
-            console.log("===============================\n");
-
-            // Store every detected face
             for (const face of faceData.faces) {
 
-                // -----------------------------
-                // Create a new person
-                // -----------------------------
-                const {
-                    data: person,
-                    error: personError
-                } = await supabase
-                    .from("people")
-                    .insert({
-                        email,
-                        representative_embedding: face.embedding
-                    })
-                    .select()
-                    .single();
+                const person =
+                    await findOrCreatePerson(
+                        face.embedding,
+                        email
+                    );
+                    console.log("isNew =", person.isNew);
 
-                if (personError) {
-                    throw personError;
+                // --------------------------------
+                // Generate avatar only once
+                // --------------------------------
+
+                if (person.isNew) {
+
+                    avatarPath = path.join(
+                        avatarDir,
+                        person.id + ".jpg"
+                    );
+
+                    await cropFace(
+                        tempPath,
+                        face.bbox,
+                        avatarPath
+                    );
+
+                    const avatarBuffer =
+                        fs.readFileSync(
+                            avatarPath
+                        );
+
+                    const avatarName =
+                        person.id + ".jpg";
+
+                    const {
+                        error: avatarUploadError
+                    } =
+                    await supabase.storage
+                        .from("avatars")
+                        .upload(
+                            avatarName,
+                            avatarBuffer,
+                            {
+                                contentType:
+                                    "image/jpeg",
+                                upsert: true
+                            }
+                        );
+
+                    if (avatarUploadError)
+                        throw avatarUploadError;
+
+                    const {
+                        data: avatarData
+                    } =
+                    supabase.storage
+                        .from("avatars")
+                        .getPublicUrl(
+                            avatarName
+                        );
+
+                    await supabase
+                        .from("people")
+                        .update({
+                            avatar_url:
+                                avatarData.publicUrl
+                        })
+                        .eq(
+                            "id",
+                            person.id
+                        );
+
+                    fs.unlinkSync(
+                        avatarPath
+                    );
+
                 }
 
-                console.log("Created Person:", person.id);
+                // --------------------------------
+                // Store face
+                // --------------------------------
 
-                // -----------------------------
-                // Insert detected face
-                // -----------------------------
                 const {
                     error: faceError
-                } = await supabase
+                } =
+                await supabase
                     .from("faces")
                     .insert({
 
-                        photo_id: photo.id,
+                        photo_id:
+                            photo.id,
 
-                        person_id: person.id,
+                        person_id:
+                            person.id,
 
                         email,
 
-                        bbox: face.bbox,
+                        bbox:
+                            face.bbox,
 
-                        embedding: face.embedding
+                        embedding:
+                            face.embedding
 
                     });
 
-                if (faceError) {
+                if (faceError)
                     throw faceError;
-                }
 
-                console.log("Stored Face");
             }
-            // ----------------------------------------------------
-            // NEXT STEP:
-            // Insert into people and faces tables here.
-            // ----------------------------------------------------
 
             res.json({
-                message: "Upload successful",
-                url: publicUrl,
-                facesDetected: faceData.count
+
+                message:
+                    "Upload successful",
+
+                url:
+                    publicUrl,
+
+                facesDetected:
+                    faceData.count
+
             });
 
-        } catch (err) {
+        }
+        catch (err) {
 
             console.error(err);
 
             res.status(500).json({
-                message: "Internal Server Error",
-                error: err.message || err
+
+                message:
+                    "Internal Server Error",
+
+                error:
+                    err.message || err
+
             });
 
-        } finally {
+        }
+        finally {
 
             if (
                 tempPath &&
                 fs.existsSync(tempPath)
             ) {
-                fs.unlinkSync(tempPath);
+                fs.unlinkSync(
+                    tempPath
+                );
+            }
+
+            if (
+                avatarPath &&
+                fs.existsSync(avatarPath)
+            ) {
+                fs.unlinkSync(
+                    avatarPath
+                );
             }
 
         }
@@ -218,32 +314,45 @@ router.get(
 
         try {
 
-            const email = req.email;
+            const email =
+                req.email;
 
             const {
                 data,
                 error
-            } = await supabase
+            } =
+            await supabase
                 .from("photos")
                 .select("*")
-                .eq("email", email)
-                .order("created_at", {
-                    ascending: false
-                });
+                .eq(
+                    "email",
+                    email
+                )
+                .order(
+                    "created_at",
+                    {
+                        ascending: false
+                    }
+                );
 
-            if (error) {
+            if (error)
                 throw error;
-            }
 
             res.json(data);
 
-        } catch (err) {
+        }
+        catch (err) {
 
             console.error(err);
 
             res.status(500).json({
-                message: "Internal Server Error",
-                error: err.message || err
+
+                message:
+                    "Internal Server Error",
+
+                error:
+                    err.message || err
+
             });
 
         }
