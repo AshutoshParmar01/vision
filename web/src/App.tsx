@@ -7,6 +7,7 @@ import ProfilePage from '#components/features/account/ProfilePage'
 import People from '#components/features/people/people'
 import PersonGallery from '#components/features/people/peopleGallery'
 import UnderConstruction from '#components/features/underconstruction/underconstruction'
+import { LoginFormDemo } from '#components/features/auth/components/login'
 
 const App = () => {
   return (
@@ -17,6 +18,7 @@ const App = () => {
             <Routes>
               <Route path="/" element={<LampDemo />} />
               <Route path="/signup" element={<SignupFormDemo />} />
+              <Route path="/login" element={<LoginFormDemo />} />
               <Route path="/upload" element={<FileUploadDemo />} />
               <Route path="/gallery" element={<Gallery />} />
               <Route path="/profile" element={<ProfilePage />} />
