@@ -11,6 +11,16 @@ import {
   Sliders,
   Clock
 } from "lucide-react";
+import { FloatingDock } from "@/components/ui/floating-dock";
+import {
+  IconPhoto,
+  IconUsersGroup,
+  IconLayoutDashboard,
+  IconArrowNarrowUp,
+  IconTextScanAi,
+  IconCode,
+  IconUserCircle
+} from '@tabler/icons-react';
 
 // Explicit type safety definition matching your Supabase backend structure
 interface UserPayload {
@@ -26,6 +36,15 @@ interface UserPayload {
 type NavigationTab = "overview" | "security" | "preferences";
 
 const ProfilePage: React.FC = () => {
+  const links = [
+    { title: "feed", icon: <IconPhoto className="h-full w-full text-neutral-500 dark:text-neutral-300" />, href: "/gallery" },
+    { title: "people", icon: <IconUsersGroup className="h-full w-full text-neutral-500 dark:text-neutral-300" />, href: "/people" },
+    { title: "collections", icon: <IconLayoutDashboard className="h-full w-full text-neutral-500 dark:text-neutral-300" />, href: "/uc" },
+    { title: "upload", icon: <IconArrowNarrowUp className="h-full w-full text-neutral-500 dark:text-neutral-300" />, href: "/upload" },
+    { title: "AI mode", icon: <IconTextScanAi className="h-full w-full text-neutral-500 dark:text-neutral-300" />, href: "/uc" },
+    { title: "contribute", icon: <IconCode className="h-full w-full text-neutral-500 dark:text-neutral-300" />, href: "https://github.com/pxe-photos/pxephotos" },
+    { title: "user", icon: <IconUserCircle className="h-full w-full text-neutral-500 dark:text-neutral-300" />, href: "/profile" },
+  ];
   const [activeTab, setActiveTab] = useState<NavigationTab>("overview");
   const [user, setUser] = useState<UserPayload | null>(null);
   const [loading, setLoading] = useState(true);
@@ -219,6 +238,9 @@ const ProfilePage: React.FC = () => {
           </div>
         </div>
       </main>
+      <div className="fixed bottom-12 left-1/2 -translate-x-1/2 z-50 flex items-center justify-center h-auto w-auto">
+        <FloatingDock items={links} />
+      </div>
     </div>
   );
 };

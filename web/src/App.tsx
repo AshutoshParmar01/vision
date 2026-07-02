@@ -6,6 +6,7 @@ import Gallery from "#components/features/feed/gallery"
 import ProfilePage from '#components/features/account/ProfilePage'
 import People from '#components/features/people/people'
 import PersonGallery from '#components/features/people/peopleGallery'
+import UnderConstruction from '#components/features/underconstruction/underconstruction'
 
 const App = () => {
   return (
@@ -21,6 +22,7 @@ const App = () => {
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/people" element={<People />}/>
               <Route path="/people/:personId" element={<PersonGallery />} />
+              <Route path="/uc" element={<UnderConstruction />} />
             </Routes>
           </main>
         </div>
