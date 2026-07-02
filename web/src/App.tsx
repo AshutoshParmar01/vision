@@ -4,6 +4,8 @@ import { LampDemo } from "#components/features/landingPage/hero"
 import { FileUploadDemo } from '#components/features/upload/upload'
 import Gallery from "#components/features/feed/gallery"
 import ProfilePage from '#components/features/account/ProfilePage'
+import People from '#components/features/people/people'
+import PersonGallery from '#components/features/people/peopleGallery'
 
 const App = () => {
   return (
@@ -12,11 +14,13 @@ const App = () => {
         <div className="flex flex-col min-h-screen">
           <main className="grow">
             <Routes>
-              <Route path="/" element = {<LampDemo />} />
-              <Route path="/signup" element = {<SignupFormDemo />} />
-              <Route path="/upload" element = {<FileUploadDemo />} />
-              <Route path="/gallery" element = {<Gallery />} />
-              <Route path="/profile" element = {<ProfilePage />} />
+              <Route path="/" element={<LampDemo />} />
+              <Route path="/signup" element={<SignupFormDemo />} />
+              <Route path="/upload" element={<FileUploadDemo />} />
+              <Route path="/gallery" element={<Gallery />} />
+              <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/people" element={<People />}/>
+              <Route path="/people/:personId" element={<PersonGallery />} />
             </Routes>
           </main>
         </div>

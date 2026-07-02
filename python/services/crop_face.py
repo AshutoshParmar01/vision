@@ -13,12 +13,28 @@ image = cv2.imread(image_path)
 
 height, width = image.shape[:2]
 
-x1 = max(0, min(x1, width))
-x2 = max(0, min(x2, width))
-y1 = max(0, min(y1, height))
-y2 = max(0, min(y2, height))
+# Add padding around face
+padding = 40
+
+x1 -= padding
+y1 -= padding
+x2 += padding
+y2 += padding
+
+# Keep crop inside image
+x1 = max(0, x1)
+y1 = max(0, y1)
+x2 = min(width, x2)
+y2 = min(height, y2)
 
 crop = image[y1:y2, x1:x2]
+
+# Skip invalid crop
+if crop.size == 0:
+    raise Exception("Invalid crop")
+
+# Standard avatar size
+crop = cv2.resize(crop, (256, 256))
 
 cv2.imwrite(output_path, crop)
 

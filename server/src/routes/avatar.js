@@ -1,3 +1,4 @@
+const supabase = require("../config/supabase");
 const express = require('express')
 const router = express.Router()
 const authMiddleware = require('../middlewares/authMiddleware') 
@@ -6,7 +7,7 @@ router.get(
     "/people",
     authMiddleware,
     async (req, res) => {
-
+        console.log("req reaching avatarjs")
         try {
 
             const { data, error } =
