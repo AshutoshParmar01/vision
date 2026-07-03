@@ -360,4 +360,184 @@ router.get(
     }
 );
 
+
+//ALBUM CREATION AND MANAGEMENT ROUTES
+
+
+// 1. Create a new album and link selected photos
+router.post(
+    "/albums",
+    authMiddleware,
+    async (req, res) => {
+        try {
+            const email = req.email;
+            const { name, photoIds, musicUrl } = req.body;
+
+            // Validate that we have a name and at least one photo selected
+            if (!name || !photoIds || !Array.isArray(photoIds) || photoIds.length === 0) {
+                return res.status(400).json({
+                    message: "Album name and at least one selected photo are required."
+                });
+            }
+
+            // Fallback default royalty-free music if none is provided
+            const defaultMusic = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3";
+            const finalMusicUrl = musicUrl || defaultMusic;
+
+            // Insert new album details
+            const { data: album, error: albumError } = await supabase
+                .from("albums")
+                .insert({
+                    name,
+                    email,
+                    music_url: finalMusicUrl
+                })
+                .select()
+                .single();
+
+            if (albumError) throw albumError;
+
+            // Link the selected photos to the new album
+            const links = photoIds.map(photoId => ({
+                album_id: album.id,
+                photo_id: photoId
+            }));
+
+            const { error: linkError } = await supabase
+                .from("album_photos")
+                .insert(links);
+
+            if (linkError) throw linkError;
+
+            res.json({
+                message: "Album created successfully",
+                album
+            });
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({
+                message: "Internal Server Error",
+                error: err.message || err
+            });
+        }
+    }
+);
+
+// 2. Get all albums for the logged-in user
+router.get(
+    "/albums",
+    authMiddleware,
+    async (req, res) => {
+        try {
+            const email = req.email;
+
+            // Fetch all albums owned by the user
+            const { data: albumsData, error: albumsError } = await supabase
+                .from("albums")
+                .select("*")
+                .eq("email", email)
+                .order("created_at", { ascending: false });
+
+            if (albumsError) throw albumsError;
+
+            // For each album, calculate photo count and fetch first photo's URL as cover
+            const albumsWithDetails = await Promise.all(
+                albumsData.map(async (album) => {
+                    const { data: photoLinks, error: linksError } = await supabase
+                        .from("album_photos")
+                        .select("photo_id")
+                        .eq("album_id", album.id);
+
+                    if (linksError) throw linksError;
+
+                    const photoCount = photoLinks.length;
+                    let coverUrl = "";
+
+                    if (photoCount > 0) {
+                        const { data: photo, error: photoError } = await supabase
+                            .from("photos")
+                            .select("url")
+                            .eq("id", photoLinks[0].photo_id)
+                            .single();
+                        
+                        if (!photoError && photo) {
+                            coverUrl = photo.url;
+                        }
+                    }
+
+                    return {
+                        ...album,
+                        photoCount,
+                        coverUrl
+                    };
+                })
+            );
+
+            res.json(albumsWithDetails);
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({
+                message: "Internal Server Error",
+                error: err.message || err
+            });
+        }
+    }
+);
+
+// 3. Get photos inside a specific album (for the slideshow player)
+router.get(
+    "/albums/:albumId",
+    authMiddleware,
+    async (req, res) => {
+        try {
+            const { albumId } = req.params;
+
+            // Fetch album details
+            const { data: album, error: albumError } = await supabase
+                .from("albums")
+                .select("*")
+                .eq("id", albumId)
+                .single();
+
+            if (albumError) throw albumError;
+
+            // Fetch photo IDs linked to the album
+            const { data: links, error: linksError } = await supabase
+                .from("album_photos")
+                .select("photo_id")
+                .eq("album_id", albumId);
+
+            if (linksError) throw linksError;
+
+            const photoIds = links.map(l => l.photo_id);
+
+            if (photoIds.length === 0) {
+                return res.json({
+                    album,
+                    photos: []
+                });
+            }
+
+            // Fetch photo records using those IDs
+            const { data: photos, error: photosError } = await supabase
+                .from("photos")
+                .select("*")
+                .in("id", photoIds);
+
+            if (photosError) throw photosError;
+
+            res.json({
+                album,
+                photos
+            });
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({
+                message: "Internal Server Error",
+                error: err.message || err
+            });
+        }
+    }
+);
+
 module.exports = router;
