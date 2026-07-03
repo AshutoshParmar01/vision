@@ -8,6 +8,8 @@ import People from '#components/features/people/people'
 import PersonGallery from '#components/features/people/peopleGallery'
 import UnderConstruction from '#components/features/underconstruction/underconstruction'
 import { LoginFormDemo } from '#components/features/auth/components/login'
+import Albums from '#components/features/albums/Albums'
+import AlbumView from '#components/features/albums/AlbumView'
 
 const App = () => {
   return (
@@ -25,6 +27,11 @@ const App = () => {
               <Route path="/people" element={<People />}/>
               <Route path="/people/:personId" element={<PersonGallery />} />
               <Route path="/uc" element={<UnderConstruction />} />
+
+              //Adding the ALBUM ROUTES
+              <Route path="/albums" element={<Albums />} />
+              <Route path="/albums/:albumId" element={<AlbumView />} />
+
             </Routes>
           </main>
         </div>
