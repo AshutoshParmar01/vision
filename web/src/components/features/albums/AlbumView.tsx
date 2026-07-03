@@ -154,8 +154,8 @@ export default function AlbumView() {
           />
         ))}
         {/* Soft dark shadows for control overlays */}
-        <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/80 to-transparent z-20" />
-        <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/80 to-transparent z-20" />
+        <div className="absolute inset-x-0 top-0 h-24 bg-linear-to-b from-black/80 to-transparent z-20" />
+        <div className="absolute inset-x-0 bottom-0 h-28 bg-linear-to-t from-black/80 to-transparent z-20" />
       </div>
 
       {/* Top Album Details & Close Button */}
