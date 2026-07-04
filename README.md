@@ -4,12 +4,78 @@ An AI-powered, privacy-first photo organization and gallery application. **Pxe P
 
 ---
 
-## 🌟 Core Value Proposition & Use Case
+## ⚙️ Development Installation & Setup
 
-* **Automated Organization:** Eliminates the manual chore of tagging, sorting, and organizing photographs.
-* **Privacy-First Face Clustering:** Unlike cloud photo solutions (such as Google Photos or Apple Photos) that send private photos to external third-party vision APIs, **Pxe Photos** runs face detection and feature extraction **locally** using high-efficiency ONNX models.
-* **Vector-Driven Similarity Search:** Employs advanced database vector similarity algorithms (via PostgreSQL `pgvector`) to group faces of the same person based on a threshold-based cosine distance.
-* **Stunning Aesthetics:** Built using modern styling, featuring interactive dark-mode layouts, floating glassmorphic navigations, tracing beams, canvas reveal effects, and fluid transitions.
+Follow these steps to run the application in a local development environment.
+
+### 1. Python Environment Setup
+
+Navigate to the `python` directory and set up the virtual environment:
+
+```bash
+cd python
+python -m venv venv
+```
+
+Activate the virtual environment:
+
+```bash
+# Windows (PowerShell)
+.\venv\Scripts\Activate.ps1
+
+# Windows (CMD)
+.\venv\Scripts\activate
+
+# macOS / Linux
+source venv/bin/activate
+```
+
+Install machine learning packages and dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+### 2. Backend Server Configuration
+
+Navigate to the `server` directory:
+
+```bash
+cd ../server
+npm install
+```
+
+Create a `.env` file in the `server` folder with the following variables:
+
+```env
+PORT=5000
+JWT_SECRET="your-jwt-secure-signing-key"
+SUPABASE_URL="https://your-supabase-project-id.supabase.co"
+SUPABASE_SERVICE_ROLE_KEY="your-supabase-service-role-key"
+```
+
+Run the backend in development mode (spawns nodemon):
+
+```bash
+npm run dev
+```
+
+### 3. Frontend Web Configuration
+
+Navigate to the `web` directory:
+
+```bash
+cd ../web
+npm install
+```
+
+Run the Vite development server:
+
+```bash
+npm run dev
+```
+
+Open your browser and navigate to the local address output by Vite (usually `http://localhost:5173`).
 
 ---
 
@@ -32,12 +98,12 @@ sequenceDiagram
     Server->>Python: Spawns python.exe extract_faces.py [temp_image_path]
     Note over Python: Runs InsightFace FaceAnalysis (ONNX) on CPU/GPU
     Python->>Server: Returns JSON: Face bounding boxes & 512-dim Embeddings
-    
+
     loop For each detected face
         Server->>DB: Calls RPC match_people(embedding, email)
         Note over DB: Computes cosine distance (<=>) against existing representative_embeddings
         DB->>Server: Returns closest person_id and distance
-        
+
         alt Distance < 0.6 (Person matches existing group)
             Server->>DB: Inserts face record mapped to existing person_id
         else Distance >= 0.6 or no group exists (New Person detected)
@@ -49,7 +115,7 @@ sequenceDiagram
             Server->>DB: Inserts face record mapped to the new person_id
         end
     end
-    
+
     Server->>User: Returns upload confirmation (faces count & url)
     Note over Server: Cleans up temp upload and avatar files from local storage
 ```
@@ -222,7 +288,7 @@ RETURNS TABLE (
 ) AS $$
 BEGIN
     RETURN QUERY
-    SELECT 
+    SELECT
         people.id,
         (people.representative_embedding <=> query_embedding) AS distance
     FROM people
@@ -234,63 +300,14 @@ $$ LANGUAGE plpgsql;
 
 ---
 
-## ⚙️ Development Installation & Setup
-
-Follow these steps to run the application in a local development environment.
-
-### 1. Python Environment Setup
-Navigate to the `python` directory and set up the virtual environment:
-```bash
-cd python
-python -m venv venv
-
-# Windows (PowerShell)
-.\venv\Scripts\Activate.ps1
-
-# Windows (CMD)
-.\venv\Scripts\activate
-
-# macOS / Linux
-source venv/bin/activate
-
-# Install machine learning packages and dependencies
-pip install -r requirements.txt
-```
-
-### 2. Backend Server Configuration
-Navigate to the `server` directory:
-```bash
-cd ../server
-npm install
-```
-Create a `.env` file in the `server` folder with the following variables:
-```env
-PORT=5000
-JWT_SECRET="your-jwt-secure-signing-key"
-SUPABASE_URL="https://your-supabase-project-id.supabase.co"
-SUPABASE_SERVICE_ROLE_KEY="your-supabase-service-role-key"
-```
-Run the backend in development mode (spawns nodemon):
-```bash
-npm run dev
-```
-
-### 3. Frontend Web Configuration
-Navigate to the `web` directory:
-```bash
-cd ../web
-npm install
-```
-Run the Vite development server:
-```bash
-npm run dev
-```
-Open your browser and navigate to the local address output by Vite (usually `http://localhost:5173`).
-
----
-
 ## 💎 Innovations & Uniqueness
 
 1. **Local Machine Learning Spawning Model:** Rather than maintaining a heavy, continuously-running Python web server (like FastAPI or Flask) which consumes memory, the Node.js backend dynamically **spawns lightweight Python subprocesses** to analyze images and crop faces only when uploads occur.
-2. **Postgres Vector clustering:** Leverages `pgvector` directly in PostgreSQL, eliminating the need to sync embeddings with dedicated vector database services like Pinecone or Milvus. 
+2. **Postgres Vector Clustering:** Leverages `pgvector` directly in PostgreSQL, eliminating the need to sync embeddings with dedicated vector database services like Pinecone or Milvus.
 3. **Aceternity UI Integration:** Uses React 19 and Vite 8 together with highly interactive premium layouts, breaking away from standard, boring template layouts to present a world-class visual canvas.
+
+---
+
+## 📜 License
+
+This project is licensed under the terms of the [LICENSE](./LICENSE) file included in this repository.
