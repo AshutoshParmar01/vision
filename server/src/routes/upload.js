@@ -3,6 +3,13 @@ const path = require("path");
 const express = require("express");
 const multer = require("multer");
 const crypto = require("crypto");
+const os = require("os");        // <-- MAKE SURE THIS LINE IS PRESENT
+const axios = require("axios");  // <-- MAKE SURE THIS LINE IS PRESENT
+
+// FFmpeg dependencies (MAKE SURE THESE 3 LINES ARE HERE)
+const ffmpegPath = require("@ffmpeg-installer/ffmpeg").path;
+const ffmpeg = require("fluent-ffmpeg");
+ffmpeg.setFfmpegPath(ffmpegPath);
 
 const router = express.Router();
 
@@ -105,14 +112,14 @@ router.post(
                 data: photo,
                 error: photoError
             } =
-            await supabase
-                .from("photos")
-                .insert({
-                    email,
-                    url: publicUrl
-                })
-                .select()
-                .single();
+                await supabase
+                    .from("photos")
+                    .insert({
+                        email,
+                        url: publicUrl
+                    })
+                    .select()
+                    .single();
 
             if (photoError)
                 throw photoError;
@@ -150,7 +157,7 @@ router.post(
                         face.embedding,
                         email
                     );
-                    console.log("isNew =", person.isNew);
+                console.log("isNew =", person.isNew);
 
                 // --------------------------------
                 // Generate avatar only once
@@ -180,17 +187,17 @@ router.post(
                     const {
                         error: avatarUploadError
                     } =
-                    await supabase.storage
-                        .from("avatars")
-                        .upload(
-                            avatarName,
-                            avatarBuffer,
-                            {
-                                contentType:
-                                    "image/jpeg",
-                                upsert: true
-                            }
-                        );
+                        await supabase.storage
+                            .from("avatars")
+                            .upload(
+                                avatarName,
+                                avatarBuffer,
+                                {
+                                    contentType:
+                                        "image/jpeg",
+                                    upsert: true
+                                }
+                            );
 
                     if (avatarUploadError)
                         throw avatarUploadError;
@@ -198,11 +205,11 @@ router.post(
                     const {
                         data: avatarData
                     } =
-                    supabase.storage
-                        .from("avatars")
-                        .getPublicUrl(
-                            avatarName
-                        );
+                        supabase.storage
+                            .from("avatars")
+                            .getPublicUrl(
+                                avatarName
+                            );
 
                     await supabase
                         .from("people")
@@ -228,25 +235,25 @@ router.post(
                 const {
                     error: faceError
                 } =
-                await supabase
-                    .from("faces")
-                    .insert({
+                    await supabase
+                        .from("faces")
+                        .insert({
 
-                        photo_id:
-                            photo.id,
+                            photo_id:
+                                photo.id,
 
-                        person_id:
-                            person.id,
+                            person_id:
+                                person.id,
 
-                        email,
+                            email,
 
-                        bbox:
-                            face.bbox,
+                            bbox:
+                                face.bbox,
 
-                        embedding:
-                            face.embedding
+                            embedding:
+                                face.embedding
 
-                    });
+                        });
 
                 if (faceError)
                     throw faceError;
@@ -321,19 +328,19 @@ router.get(
                 data,
                 error
             } =
-            await supabase
-                .from("photos")
-                .select("*")
-                .eq(
-                    "email",
-                    email
-                )
-                .order(
-                    "created_at",
-                    {
-                        ascending: false
-                    }
-                );
+                await supabase
+                    .from("photos")
+                    .select("*")
+                    .eq(
+                        "email",
+                        email
+                    )
+                    .order(
+                        "created_at",
+                        {
+                            ascending: false
+                        }
+                    );
 
             if (error)
                 throw error;
@@ -381,8 +388,8 @@ router.post(
             }
 
             // Fallback default royalty-free music if none is provided
-            const defaultMusic = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3";
-            const finalMusicUrl = musicUrl || defaultMusic;
+            const defaultMusic = "https://toefuqgmlgibecpdhri.supabase.co/storage/v1/object/public/Music/calm%20background.mp3";
+            const finalMusicUrl = (musicUrl === undefined || musicUrl === null) ? defaultMusic : musicUrl;
 
             // Insert new album details
             const { data: album, error: albumError } = await supabase
@@ -459,7 +466,7 @@ router.get(
                             .select("url")
                             .eq("id", photoLinks[0].photo_id)
                             .single();
-                        
+
                         if (!photoError && photo) {
                             coverUrl = photo.url;
                         }
@@ -536,6 +543,170 @@ router.get(
                 message: "Internal Server Error",
                 error: err.message || err
             });
+        }
+    }
+);
+
+// 4. Generate a rendered slideshow video of the album with background music (FFmpeg backend compilation)
+router.get(
+    "/albums/:albumId/video",
+    authMiddleware,
+    async (req, res) => {
+        const { albumId } = req.params;
+        const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), `slideshow-${albumId}-`));
+        try {
+            // Fetch album details from Supabase database
+            const { data: album, error: albumError } = await supabase
+                .from("albums")
+                .select("*")
+                .eq("id", albumId)
+                .single();
+            if (albumError || !album) {
+                throw albumError || new Error("Album not found");
+            }
+            // Fetch photo IDs linked to the album
+            const { data: links, error: linksError } = await supabase
+                .from("album_photos")
+                .select("photo_id")
+                .eq("album_id", albumId);
+            if (linksError) throw linksError;
+            const photoIds = links.map(l => l.photo_id);
+            if (photoIds.length === 0) {
+                return res.status(400).json({
+                    message: "Album is empty and cannot be compiled into a video."
+                });
+            }
+            // Fetch photo records using those IDs
+            const { data: photos, error: photosError } = await supabase
+                .from("photos")
+                .select("*")
+                .in("id", photoIds);
+            if (photosError) throw photosError;
+            // Download photos to server's temporary directory
+            const imagePaths = [];
+            for (let i = 0; i < photos.length; i++) {
+                const imgPath = path.join(tempDir, `img_${i.toString().padStart(3, "0")}.jpg`);
+                const response = await axios({ url: photos[i].url, responseType: "stream" });
+                const writer = fs.createWriteStream(imgPath);
+
+                response.data.pipe(writer);
+                await new Promise((resolve, reject) => {
+                    writer.on("finish", resolve);
+                    writer.on("error", reject);
+                });
+                imagePaths.push(imgPath);
+            }
+            // Download background music if present
+            let audioPath = null;
+            if (album.music_url) {
+                audioPath = path.join(tempDir, "audio.mp3");
+                const audioResponse = await axios({ url: album.music_url, responseType: "stream" });
+                const audioWriter = fs.createWriteStream(audioPath);
+
+                audioResponse.data.pipe(audioWriter);
+                await new Promise((resolve, reject) => {
+                    audioWriter.on("finish", resolve);
+                    audioWriter.on("error", reject);
+                });
+            }
+            // Generate demuxer text file list for FFmpeg (each photo is shown for 4 seconds)
+            let concatContent = "";
+            imagePaths.forEach((imgPath) => {
+                const escapedPath = imgPath.replace(/\\/g, "/");
+                concatContent += `file '${escapedPath}'\nduration 4.0\n`;
+            });
+            // Repeat the last image once more as per FFmpeg concat demuxer specification
+            const lastEscapedPath = imagePaths[imagePaths.length - 1].replace(/\\/g, "/");
+            concatContent += `file '${lastEscapedPath}'\n`;
+            const concatTxtPath = path.join(tempDir, "input.txt");
+            fs.writeFileSync(concatTxtPath, concatContent);
+
+            // Setup output path and configure FFmpeg command
+            const outputVideoPath = path.join(tempDir, "output.mp4");
+
+            let command = ffmpeg()
+                .input(concatTxtPath)
+                .inputOptions(["-f concat", "-safe 0"])
+                .outputOptions([
+                    "-c:v libx264",      // H.264 video codec
+                    "-pix_fmt yuv420p",  // standard YUV pixel format
+                    "-r 25",             // Output Frame rate (25fps)
+                    // Auto-scale & pad images to 1280x720 aspect ratio letterbox/pillarbox
+                    "-vf scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2:black"
+                ]);
+            if (audioPath) {
+                command = command
+                    .input(audioPath)
+                    .outputOptions([
+                        "-c:a aac",      // AAC audio codec
+                        "-b:a 192k",     // audio bitrate
+                        "-shortest"      // truncate video output when slides end
+                    ]);
+            }
+
+            // Detect if client cancels the request
+            let cancelled = false;
+
+            req.on("close", () => {
+
+                if (cancelled) return;
+
+                cancelled = true;
+
+                console.log("Client cancelled video download.");
+
+                try {
+                    command.kill("SIGKILL");
+                } catch (err) {
+                    console.log("FFmpeg was already stopped.");
+                }
+
+                try {
+                    fs.rmSync(tempDir, {
+                        recursive: true,
+                        force: true
+                    });
+                    console.log("Temporary files deleted.");
+                } catch (err) {
+                    console.log("Could not delete temp directory.");
+                }
+
+            });
+            command
+                .save(outputVideoPath)
+                .on("end", () => {
+                    if (cancelled) return;
+
+                    res.setHeader("Content-Type", "video/mp4");
+                    res.setHeader("Content-Disposition", `attachment; filename="${album.name}.mp4"`);
+
+                    res.sendFile(outputVideoPath, () => {
+                        // Cleanup temp folder after download completes
+                        fs.rmSync(tempDir, { recursive: true, force: true });
+                    });
+                })
+                .on("error", (err) => {
+                    if (cancelled) return;
+
+                    console.error("FFmpeg error:", err);
+
+                    res.status(500).json({
+                        message: "Failed to compile slideshow video."
+                    });
+
+                    try {
+                        fs.rmSync(tempDir, {
+                            recursive: true,
+                            force: true
+                        });
+                    } catch { }
+                });
+        } catch (error) {
+            console.error("Video creation endpoint failed:", error);
+            res.status(500).json({ message: "Internal Server Error during video generation." });
+            try {
+                fs.rmSync(tempDir, { recursive: true, force: true });
+            } catch (_) { }
         }
     }
 );
