@@ -271,7 +271,7 @@ export default function Albums() {
                   <input
                     type="url"
                     required={isCustomMusic}
-                    placeholder="Paste a direct MP3 link (e.g. https://example.com/song.mp3)"
+                    placeholder="Paste a direct MP3 link "
                     value={musicUrl}
                     onChange={(e) => setMusicUrl(e.target.value)}
                     className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-white mt-3 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition"

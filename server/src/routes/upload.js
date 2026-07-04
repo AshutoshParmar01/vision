@@ -381,8 +381,8 @@ router.post(
             }
 
             // Fallback default royalty-free music if none is provided
-            const defaultMusic = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3";
-            const finalMusicUrl = musicUrl || defaultMusic;
+           const defaultMusic = "https://toefuqgmlgibecpdhri.supabase.co/storage/v1/object/public/Music/calm%20background.mp3";
+           const finalMusicUrl = (musicUrl === undefined || musicUrl === null) ? defaultMusic : musicUrl;
 
             // Insert new album details
             const { data: album, error: albumError } = await supabase
