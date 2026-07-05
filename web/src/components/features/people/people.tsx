@@ -10,10 +10,12 @@ import {
     IconCode,
     IconUserCircle
 } from '@tabler/icons-react';
+import { div } from "three/src/nodes/math/OperatorNode.js";
 
 type Person = {
     id: string;
     avatar_url: string;
+    name?: string;
 };
 
 const People = () => {
@@ -66,6 +68,19 @@ const People = () => {
         fetchPeople();
 
     }, []);
+
+    const writeName = (person: Person) => {
+        if (person.name) {
+            return person.name
+        } else {
+            return <div>
+                <form id="nameForm">
+                    <input type="text" id="nameInput" required></input>
+                        <button type="submit">Submit</button>
+                </form>
+            </div>
+        }
+    }
 
     return (
 
@@ -131,11 +146,10 @@ const People = () => {
                                     transition
                                     "
                                 >
-
-                                    Open Gallery →
+                                </div>
+                                <div>
 
                                 </div>
-
                             </div>
 
                         ))
