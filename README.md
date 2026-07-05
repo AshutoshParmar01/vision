@@ -1,6 +1,40 @@
 # Pxe Photos
 
-An AI-powered, privacy-first photo organization and gallery application. **Pxe Photos** automatically scans uploaded photos, detects faces, extracts high-dimensional biometric embeddings, clusters faces belonging to the same individuals, and segregates them into private, person-specific galleries.
+An AI-powered, privacy-first photo organization and gallery application. **Pxe Photos** automatically scans uploaded photos, detects faces, extracts high-dimensional biometric embeddings, clusters them into people groups, and organizes them into custom albums with music and video slideshow capabilities.
+
+---
+
+## ✨ Latest Features (July 2026)
+
+### 🎬 Album Video Slideshow Generation
+- **New Backend Endpoint:** `/albums/:albumId/video` - Generates MP4 videos from photo albums
+- **FFmpeg Integration:** Server-side video compilation with H.264 encoding
+- **Background Music Support:** Albums can include curated music tracks during playback
+- **Smart Photo Transitions:** Each photo displays for 4 seconds with smooth fade-in/out effects
+- **Auto-scaling:** Photos automatically scaled and letterboxed to 1280x720 resolution
+- **Download Support:** Users can download compiled slideshows as MP4 files with progress tracking
+- **Cancellation Support:** Ability to cancel ongoing video downloads; automatic temp file cleanup
+
+### 📷 Album Creation & Management
+- **Album Creation Modal:** Intuitive UI for creating new photo albums
+- **Photo Selection Grid:** Visual multi-select interface for choosing photos
+- **Music Selection:** 6 pre-configured royalty-free music tracks:
+  - 🎵 Calm Background (Default)
+  - 🔇 No Music Option
+  - 🎹 Für Elise (Classic)
+  - 🎹 Keys of Tomorrow
+  - 🎶 Lofi Chill Beats
+  - 🌍 Travel Ambient
+- **Custom Music URLs:** Support for uploading custom MP3 URLs
+- **Album Gallery:** Browse and manage all created albums with cover photo previews
+
+### 🎨 Enhanced Landing Page
+- **Improved Hero Section:** Better animations and transitions
+- **Feature Cards:** Three key feature highlights with icons
+- **Call-to-Action:** Prominent "Get started free" button with smooth animations
+- **Responsive Design:** Optimized for desktop and mobile viewports
+- **Support Copy:** Clear value proposition below hero animation
+- **Footer:** Project branding and context messaging
 
 ---
 
@@ -120,6 +154,38 @@ sequenceDiagram
     Note over Server: Cleans up temp upload and avatar files from local storage
 ```
 
+### Album Video Generation Flow
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as User (React Front-End)
+    participant Server as Express Server (Node.js)
+    participant DB as Database (Supabase)
+    participant FFmpeg as FFmpeg (Server Process)
+    participant Storage as Supabase Storage
+
+    User->>Server: GET /albums/:albumId/video (with JWT)
+    Note over Server: Validate album ownership and fetch album metadata
+    Server->>DB: Query album_photos table for photo IDs
+    Server->>DB: Fetch photo records with URLs
+    
+    loop Download Photos
+        Server->>Storage: Download each photo from Supabase Storage
+        Server->>Server: Save to temp directory locally
+    end
+    
+    Server->>Server: Create FFmpeg concat demuxer file
+    Note over Server: Generate playlist with 4-second duration per photo
+    
+    Server->>FFmpeg: Execute FFmpeg command
+    Note over FFmpeg: H.264 encoding, auto-scale to 1280x720, add background audio
+    FFmpeg->>Server: Stream MP4 output
+    
+    Server->>User: Send MP4 file as downloadable attachment
+    Note over Server: Clean up temporary files after transmission
+```
+
 ---
 
 ## 📁 Folder & File Structure
@@ -145,7 +211,7 @@ pxephotos/
 │   ├── .env                            # API Keys, secrets, and Supabase connections
 │   ├── index.js                        # App entry point; mounts routes and starts listener on Port 5000
 │   ├── test.js                         # Simple backend test runner calling face extraction locally
-│   ├── package.json                    # Backend NPM dependencies (JWT, Bcrypt, Multer, Supabase SDK)
+│   ├── package.json                    # Backend NPM dependencies (JWT, Bcrypt, Multer, Supabase SDK, FFmpeg, Axios)
 │   └── src/
 │       ├── config/
 │       │   └── supabase.js             # Initializer for the Supabase Client with service role authority
@@ -159,7 +225,7 @@ pxephotos/
 │       │   ├── auth.js                 # Authentication endpoints (/signup, /me)
 │       │   ├── avatar.js               # Retrieves list of clustered people (/people)
 │       │   ├── people.js               # Retrieves photos containing specific people (/people/:personId/photos)
-│       │   └── upload.js               # Handles photo upload flow, spawns Python processing, updates Supabase
+│       │   └── upload.js               # Handles photo upload flow, spawns Python processing, album management, video generation
 │       └── services/
 │           ├── authService.js          # Handles registration, password hashing (bcrypt), and login (JWT sign)
 │           ├── avatarService.js        # Service layer interface that calls Python crop_face.py
@@ -168,7 +234,7 @@ pxephotos/
 │           └── profileService.js       # Fetches authenticated user account details
 │
 └── web/                                # React Front-End Application
-    ├── package.json                    # Frontend NPM dependencies (React 19, Vite 8, Tailwind v4, Motion)
+    ├── package.json                    # Frontend NPM dependencies (React 19, Vite 8, Tailwind v4, Motion, file-saver)
     ├── components.json                 # Shadcn-UI configuration
     ├── vite.config.ts                  # Vite + TypeScript configuration
     └── src/
@@ -196,6 +262,9 @@ pxephotos/
             └── features/               # Domain-Specific Features
                 ├── account/
                 │   └── ProfilePage.tsx # View displaying active user's details
+                ├── albums/             # ✨ NEW: Album Management Features
+                │   ├── Albums.tsx      # Album gallery with creation modal and music selection
+                │   └── AlbumView.tsx   # Album slideshow viewer with playback controls and video download
                 ├── auth/
                 │   └── components/
                 │       └── signup.tsx  # Dynamic Auth screen using Aceternity input systems
@@ -223,9 +292,13 @@ pxephotos/
 | | **Tailwind CSS v4** | Modern CSS-in-JS utility framework |
 | | **Framer Motion (v12)**| Smooth, hardware-accelerated animations |
 | | **Aceternity UI** | High-end visual and creative layout components |
+| | **File-Saver** | Client-side MP4 download management |
 | **Backend** | **Node.js + Express**| Rest API handlers, file streaming, and process orchestration |
 | | **JWT / Bcrypt** | Secure password hashing and token-based stateful authentication |
 | | **Multer** | Buffer-based file upload parser |
+| | **FFmpeg (CLI)** | Server-side video encoding and slideshow generation |
+| | **Fluent-FFmpeg** | Node.js wrapper for FFmpeg command orchestration |
+| | **Axios** | HTTP client for downloading remote assets (photos, music) |
 | **AI / ML** | **InsightFace** | Face detection & deep-learning 512-dimension embedding extraction |
 | | **ONNX Runtime** | High-performance execution engine for InsightFace models |
 | | **OpenCV (Python)** | High-speed image loading, cropping, and resizing operations |
@@ -280,7 +353,25 @@ CREATE TABLE faces (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- 6. Create similarity matching RPC function
+-- 6. Create Albums Table (NEW: Album management)
+CREATE TABLE albums (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    email TEXT REFERENCES users(email) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    music_url TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- 7. Create Album Photos Junction Table (NEW: Maps photos to albums)
+CREATE TABLE album_photos (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    album_id UUID REFERENCES albums(id) ON DELETE CASCADE,
+    photo_id UUID REFERENCES photos(id) ON DELETE CASCADE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    UNIQUE(album_id, photo_id)
+);
+
+-- 8. Create similarity matching RPC function
 CREATE OR REPLACE FUNCTION match_people(query_embedding vector(512), user_email TEXT)
 RETURNS TABLE (
     id UUID,
@@ -302,9 +393,15 @@ $$ LANGUAGE plpgsql;
 
 ## 💎 Innovations & Uniqueness
 
-1. **Local Machine Learning Spawning Model:** Rather than maintaining a heavy, continuously-running Python web server (like FastAPI or Flask) which consumes memory, the Node.js backend dynamically **spawns lightweight Python subprocesses** to analyze images and crop faces only when uploads occur.
+1. **Local Machine Learning Spawning Model:** Rather than maintaining a heavy, continuously-running Python web server (like FastAPI or Flask) which consumes memory, the Node.js backend dynamically spawns lightweight Python processes only when needed, reducing operational overhead.
+
 2. **Postgres Vector Clustering:** Leverages `pgvector` directly in PostgreSQL, eliminating the need to sync embeddings with dedicated vector database services like Pinecone or Milvus.
-3. **Aceternity UI Integration:** Uses React 19 and Vite 8 together with highly interactive premium layouts, breaking away from standard, boring template layouts to present a world-class visual canvas.
+
+3. **Aceternity UI Integration:** Uses React 19 and Vite 8 together with highly interactive premium layouts, breaking away from standard, boring template layouts to present a world-class visual experience.
+
+4. **Server-Side Video Compilation:** Instead of relying on third-party video services (AWS MediaConvert, Cloudinary), the backend uses open-source FFmpeg to generate MP4 slideshows on-demand, maintaining complete privacy and cost efficiency.
+
+5. **Smart Music Integration:** Albums support both pre-curated royalty-free tracks and custom user URLs, with intelligent audio-to-video synchronization and automatic duration management.
 
 ---
 
