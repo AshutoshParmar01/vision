@@ -8,6 +8,9 @@ const router = express.Router();
 
 const authMiddleware = require("../middlewares/authMiddleware");
 const { extractFaces } = require("../services/faceService");
+const {
+    recognizeFace
+} = require("../services/recognizeService");
 
 const upload = multer({
     storage: multer.memoryStorage()
@@ -61,7 +64,31 @@ router.post(
 
             fs.unlinkSync(tempPath);
 
-            res.json(faceData);
+            const result = [];
+
+            for (const face of faceData.faces) {
+
+                const person =
+                    await recognizeFace(
+                        face.embedding,
+                        req.email
+                    );
+
+                result.push({
+
+                    bbox: face.bbox,
+
+                    person
+
+                });
+
+            }
+
+            res.json({
+
+                faces: result
+
+            });
 
         }
         catch (err) {

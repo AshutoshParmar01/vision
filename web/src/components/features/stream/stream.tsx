@@ -5,11 +5,77 @@ const Stream = () => {
     const webcamVideo =
         useRef<HTMLVideoElement>(null);
 
-    const canvasRef =
+    const overlayCanvas =
+        useRef<HTMLCanvasElement>(null);
+
+    const captureCanvas =
         useRef<HTMLCanvasElement>(null);
 
     const intervalRef =
         useRef<number | null>(null);
+
+    const drawFaces = (faces: any[]) => {
+
+        const canvas =
+            overlayCanvas.current;
+
+        const video =
+            webcamVideo.current;
+
+        if (!canvas || !video)
+            return;
+
+        canvas.width =
+            video.videoWidth;
+
+        canvas.height =
+            video.videoHeight;
+
+        const ctx =
+            canvas.getContext("2d");
+
+        if (!ctx)
+            return;
+
+        ctx.clearRect(
+            0,
+            0,
+            canvas.width,
+            canvas.height
+        );
+
+        ctx.strokeStyle = "#8b5cf6";
+        ctx.lineWidth = 4;
+
+        ctx.fillStyle = "#8b5cf6";
+        ctx.font = "22px Arial";
+
+        for (const face of faces) {
+
+            const [
+                x1,
+                y1,
+                x2,
+                y2
+            ] = face.bbox;
+
+            ctx.strokeRect(
+                x1,
+                y1,
+                x2 - x1,
+                y2 - y1
+            );
+
+            ctx.fillText(
+                face.person?.name ??
+                "Unknown",
+                x1,
+                y1 - 10
+            );
+
+        }
+
+    };
 
     const captureFrame = async () => {
 
@@ -17,7 +83,7 @@ const Stream = () => {
             webcamVideo.current;
 
         const canvas =
-            canvasRef.current;
+            captureCanvas.current;
 
         if (!video || !canvas)
             return;
@@ -58,7 +124,7 @@ const Stream = () => {
                 formData.append(
                     "photo",
                     blob,
-                    "frame.png"
+                    "frame.jpg"
                 );
 
                 try {
@@ -92,6 +158,10 @@ const Stream = () => {
                         await response.json();
 
                     console.log(data);
+
+                    drawFaces(
+                        data.faces
+                    );
 
                 }
                 catch (err) {
@@ -135,12 +205,15 @@ const Stream = () => {
 
                     webcamVideo.current?.play();
 
+                    if (intervalRef.current)
+                        clearInterval(intervalRef.current);
+
                     intervalRef.current =
                         window.setInterval(
 
                             captureFrame,
 
-                            500
+                            100
 
                         );
 
@@ -167,7 +240,15 @@ const Stream = () => {
 
                 </h1>
 
-                <div className="overflow-hidden rounded-2xl border border-neutral-800">
+                <div
+                    className="
+                        relative
+                        overflow-hidden
+                        rounded-2xl
+                        border
+                        border-neutral-800
+                    "
+                >
 
                     <video
 
@@ -175,11 +256,29 @@ const Stream = () => {
 
                         autoPlay
 
-                        playsInline
-
                         muted
 
-                        className="w-full aspect-video object-cover"
+                        playsInline
+
+                        className="
+                            w-full
+                            aspect-video
+                            object-cover
+                        "
+
+                    />
+
+                    <canvas
+
+                        ref={overlayCanvas}
+
+                        className="
+                            absolute
+                            inset-0
+                            w-full
+                            h-full
+                            pointer-events-none
+                        "
 
                     />
 
@@ -187,7 +286,7 @@ const Stream = () => {
 
                 <canvas
 
-                    ref={canvasRef}
+                    ref={captureCanvas}
 
                     className="hidden"
 
@@ -199,7 +298,16 @@ const Stream = () => {
 
                         onClick={getMedia}
 
-                        className="rounded-xl bg-white px-6 py-3 text-black font-semibold"
+                        className="
+                            rounded-xl
+                            bg-white
+                            px-6
+                            py-3
+                            font-semibold
+                            text-black
+                            hover:bg-neutral-200
+                            transition
+                        "
 
                     >
 
