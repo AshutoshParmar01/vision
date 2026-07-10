@@ -31,39 +31,55 @@ const People = () => {
 
     const navigate = useNavigate();
 
-    const [people, setPeople] = useState<Person[]>([]);
+    const [people, setPeople] =
+        useState<Person[]>([]);
+
+    const [editingId, setEditingId] =
+        useState<string | null>(null);
+
+    const [name, setName] =
+        useState("");
+
+    const fetchPeople = async () => {
+
+        try {
+
+            const authToken =
+                localStorage.getItem("authToken");
+
+            const response =
+                await fetch(
+
+                    "http://localhost:5000/api/avatars/people",
+
+                    {
+
+                        headers: {
+
+                            Authorization:
+                                `Bearer ${authToken}`
+
+                        }
+
+                    }
+
+                );
+
+            const data =
+                await response.json();
+
+            setPeople(data);
+
+        }
+        catch (err) {
+
+            console.log(err);
+
+        }
+
+    };
 
     useEffect(() => {
-
-        const fetchPeople = async () => {
-
-            try {
-
-                const authToken =
-                    localStorage.getItem("authToken");
-
-                const response =
-                    await fetch(
-                        "http://localhost:5000/api/avatars/people",
-                        {
-                            headers: {
-                                Authorization: `Bearer ${authToken}`
-                            }
-                        }
-                    );
-
-                const data =
-                    await response.json();
-
-                setPeople(data);
-
-            } catch (err) {
-
-                console.log(err);
-
-            }
-
-        };
 
         fetchPeople();
 
@@ -76,7 +92,7 @@ const People = () => {
             return <div>
                 <form id="nameForm">
                     <input type="text" id="nameInput" required></input>
-                        <button type="submit">Submit</button>
+                    <button type="submit">Submit</button>
                 </form>
             </div>
         }
@@ -103,15 +119,8 @@ const People = () => {
                         people.map((person) => (
 
                             <div
-
                                 key={person.id}
-
-                                onClick={() =>
-                                    navigate(`/people/${person.id}`)
-                                }
-
-                                className="cursor-pointer group flex flex-col items-center"
-
+                                className="flex flex-col items-center gap-3"
                             >
 
                                 <img
@@ -120,36 +129,150 @@ const People = () => {
 
                                     alt="avatar"
 
+                                    onClick={() =>
+                                        navigate(`/people/${person.id}`)
+                                    }
+
                                     className="
-                                    w-36
-                                    h-36
-                                    rounded-full
-                                    object-cover
-                                    border-4
-                                    border-white
-                                    shadow-2xl
-                                    transition
-                                    duration-300
-                                    group-hover:scale-110
-                                    group-hover:border-violet-400
-                                    "
+                w-36
+                h-36
+                rounded-full
+                object-cover
+                border-4
+                border-white
+                shadow-2xl
+                cursor-pointer
+                transition
+                duration-300
+                hover:scale-105
+                hover:border-violet-400
+            "
 
                                 />
 
-                                <div
-                                    className="
-                                    mt-4
-                                    text-neutral-300
-                                    text-sm
-                                    opacity-0
-                                    group-hover:opacity-100
-                                    transition
-                                    "
-                                >
-                                </div>
-                                <div>
+                                {
 
-                                </div>
+                                    editingId === person.id ?
+
+                                        <div className="flex flex-col gap-2 w-full">
+
+                                            <input
+
+                                                value={name}
+
+                                                onChange={(e) =>
+                                                    setName(e.target.value)
+                                                }
+
+                                                className="
+                        rounded-lg
+                        bg-neutral-900
+                        border
+                        border-neutral-700
+                        px-3
+                        py-2
+                        text-sm
+                        text-white
+                        outline-none
+                    "
+
+                                                placeholder="Enter name"
+
+                                            />
+
+                                            <button
+
+                                                className="
+                        rounded-lg
+                        bg-violet-600
+                        py-2
+                        text-sm
+                        hover:bg-violet-500
+                    "
+
+                                                onClick={async () => {
+
+                                                    const token =
+                                                        localStorage.getItem("authToken");
+
+                                                    await fetch(
+
+                                                        `http://localhost:5000/api/avatars/people/${person.id}`,
+
+                                                        {
+
+                                                            method: "PUT",
+
+                                                            headers: {
+
+                                                                "Content-Type":
+                                                                    "application/json",
+
+                                                                Authorization:
+                                                                    `Bearer ${token}`
+
+                                                            },
+
+                                                            body: JSON.stringify({
+
+                                                                name
+
+                                                            })
+
+                                                        }
+
+                                                    );
+
+                                                    setEditingId(null);
+
+                                                    fetchPeople();
+
+                                                }}
+
+                                            >
+
+                                                Save
+
+                                            </button>
+
+                                        </div>
+
+                                        :
+
+                                        <>
+
+                                            <p className="text-sm text-neutral-300">
+
+                                                {person.name ?? "Unnamed Person"}
+
+                                            </p>
+
+                                            <button
+
+                                                className="
+                        text-xs
+                        text-violet-400
+                        hover:text-violet-300
+                    "
+
+                                                onClick={() => {
+
+                                                    setEditingId(person.id);
+
+                                                    setName(person.name ?? "");
+
+                                                }}
+
+                                            >
+
+                                                Edit
+
+                                            </button>
+
+                                        </>
+
+                                }
+
                             </div>
 
                         ))
