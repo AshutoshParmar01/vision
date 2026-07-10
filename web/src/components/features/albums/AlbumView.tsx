@@ -9,7 +9,14 @@ import {
   IconChevronRight,
   IconVolume,
   IconVolumeOff,
+  //--
+  IconDownload,
+  IconLoader2,
+  //--
 } from "@tabler/icons-react";
+//--
+import { saveAs } from "file-saver";
+//--
 
 interface Album {
   id: string;
@@ -31,9 +38,14 @@ export default function AlbumView() {
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(false);
   const [showAutoplayOverlay, setShowAutoplayOverlay] = useState(true);
+  //--
+  const [isDownloading, setIsDownloading] = useState(false);
+  //-
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const slideshowInterval = useRef<any>(null);
+  // cancel dnload
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     fetchAlbumDetails();
@@ -105,6 +117,57 @@ export default function AlbumView() {
     }
   };
 
+  //--
+  const handleDownloadVideo = async () => {
+    setIsDownloading(true);
+    try {
+      const token = localStorage.getItem("authToken");
+
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
+
+      const response = await axios.get(
+        `http://localhost:5000/api/photo/albums/${albumId}/video`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          responseType: "blob",
+          signal: controller.signal,
+        }
+      );
+
+      const videoBlob = new Blob([response.data], { type: "video/mp4" });
+      saveAs(videoBlob, `${album?.name || "slideshow"}.mp4`);
+    } catch (err: any) {
+
+      if (
+        err.name === "CanceledError" ||
+        err.code === "ERR_CANCELED"
+      ) {
+        console.log("Download cancelled.");
+        return;
+      }
+
+      console.error("Failed to download video:", err);
+
+      alert(
+        "Could not generate the slideshow video."
+      );
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  const handleCancelDownload = () => {
+
+    abortControllerRef.current?.abort();
+
+    setIsDownloading(false);
+
+  };
+  //--
+
   if (!album || photos.length === 0) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center text-zinc-400">
@@ -148,14 +211,13 @@ export default function AlbumView() {
             key={photo.id}
             src={photo.url}
             alt=""
-            className={`absolute max-w-full max-h-full object-contain transition-opacity duration-1000 ease-in-out ${
-              index === currentIndex ? "opacity-100 z-10" : "opacity-0 z-0"
-            }`}
+            className={`absolute max-w-full max-h-full object-contain transition-opacity duration-1000 ease-in-out ${index === currentIndex ? "opacity-100 z-10" : "opacity-0 z-0"
+              }`}
           />
         ))}
         {/* Soft dark shadows for control overlays */}
-        <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/80 to-transparent z-20" />
-        <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/80 to-transparent z-20" />
+        <div className="absolute inset-x-0 top-0 h-24 bg-linear-to-b from-black/80 to-transparent z-20" />
+        <div className="absolute inset-x-0 bottom-0 h-28 bg-linear-to-t from-black/80 to-transparent z-20" />
       </div>
 
       {/* Top Album Details & Close Button */}
@@ -166,13 +228,59 @@ export default function AlbumView() {
             {currentIndex + 1} of {photos.length}
           </p>
         </div>
-        <button
-          onClick={() => navigate("/albums")}
-          className="p-3 rounded-full bg-zinc-900/60 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 hover:text-white transition"
-        >
-          <IconX className="h-6 w-6" />
-        </button>
+
+
+        <div className="flex items-center gap-3">
+          {/* SLIDESHOW VIDEO DOWNLOAD BUTTON */}
+          {!isDownloading ? (
+
+            <button
+              onClick={handleDownloadVideo}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-zinc-900/60 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 hover:text-white transition"
+            >
+              <IconDownload className="h-5 w-5 text-cyan-400" />
+              <span className="text-xs font-medium">
+                Download Video
+              </span>
+            </button>
+
+          ) : (
+
+            <>
+              {/* Download Status */}
+              <div className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-zinc-900/60 border border-zinc-800 text-zinc-300">
+
+                <IconLoader2 className="h-5 w-5 animate-spin text-cyan-400" />
+
+                <span className="text-xs font-medium">
+                  Downloading Video...
+                </span>
+
+              </div>
+
+              {/* Cancel Button */}
+              <button
+                onClick={handleCancelDownload}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-red-600 hover:bg-red-700 text-white transition"
+              >
+                <IconX className="h-5 w-5" />
+
+                <span className="text-xs font-medium">
+                  Cancel
+                </span>
+              </button>
+            </>
+
+          )}
+          <button
+            onClick={() => navigate("/albums")}
+            className="p-3 rounded-full bg-zinc-900/60 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 hover:text-white transition"
+          >
+            <IconX className="h-6 w-6" />
+          </button>
+        </div>
       </div>
+
 
       {/* Floating Control Panel at the bottom */}
       <div className="absolute bottom-8 flex items-center gap-6 z-30 px-6 py-3 rounded-full bg-zinc-900/60 border border-zinc-800/80 backdrop-blur-md">

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { FloatingDock } from "@/components/ui/floating-dock";
+import { FloatingDock } from "../../ui/floating-dock";
 import {
   IconPhoto,
   IconUsersGroup,
@@ -154,7 +154,7 @@ export default function Albums() {
   return (
     <div className="relative min-h-screen w-full bg-black text-white antialiased px-6 pt-12 pb-24">
       <div className="max-w-5xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8 bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+        <h1 className="text-3xl font-bold mb-8 bg-linear-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
           Your Albums
         </h1>
 
@@ -190,7 +190,7 @@ export default function Albums() {
                   <IconPhoto className="h-12 w-12 text-zinc-700" />
                 </div>
               )}
-              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10" />
+              <div className="absolute inset-0 bg-linear-to-t from-black via-black/40 to-transparent z-10" />
 
               <div className="relative z-20 p-5">
                 <h3 className="text-lg font-semibold truncate text-white">{album.name}</h3>
@@ -234,7 +234,7 @@ export default function Albums() {
 
               {/* DROPDOWN SELECT MENU FOR MUSIC */}
               <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2 flex items-center gap-2">
+                <label className="text-sm font-medium text-zinc-300 mb-2 flex items-center gap-2">
                   <IconMusic className="h-4 w-4 text-cyan-400" /> Background Music
                 </label>
                 <div className="relative">
