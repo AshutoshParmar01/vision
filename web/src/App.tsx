@@ -29,6 +29,7 @@ const App = () => {
               <Route path="/people/:personId" element={<PersonGallery />} />
               <Route path="/uc" element={<UnderConstruction />} />
               <Route path="/albums" element={<Albums />} />
+              <Route path="/stream" element={<Stream />} />
               <Route path="/albums/:albumId" element={<AlbumView />} />
             </Routes>
           </main>
