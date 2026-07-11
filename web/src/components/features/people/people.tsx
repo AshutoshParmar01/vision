@@ -28,7 +28,7 @@ const People = () => {
     const links = [
         { title: "feed", icon: <IconPhoto className="h-full w-full" />, href: "/gallery" },
         { title: "people", icon: <IconUsersGroup className="h-full w-full" />, href: "/people" },
-        { title: "collections", icon: <IconLayoutDashboard className="h-full w-full" />, href: "/uc" },
+        { title: "collections", icon: <IconLayoutDashboard className="h-full w-full" />, href: "/albums" },
         { title: "upload", icon: <IconArrowNarrowUp className="h-full w-full" />, href: "/upload" },
         { title: "AI mode", icon: <IconTextScanAi className="h-full w-full" />, href: "/uc" },
         { title: "contribute", icon: <IconCode className="h-full w-full" />, href: "https://github.com/pxe-photos/pxephotos" },

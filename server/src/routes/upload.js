@@ -388,13 +388,8 @@ router.post(
             }
 
             // Fallback default royalty-free music if none is provided
-<<<<<<< HEAD
-           const defaultMusic = "https://toefuqgmlgibecpdhri.supabase.co/storage/v1/object/public/Music/calm%20background.mp3";
-           const finalMusicUrl = (musicUrl === undefined || musicUrl === null) ? defaultMusic : musicUrl;
-=======
             const defaultMusic = "https://toefuqgmlgibecpdhri.supabase.co/storage/v1/object/public/Music/calm%20background.mp3";
             const finalMusicUrl = (musicUrl === undefined || musicUrl === null) ? defaultMusic : musicUrl;
->>>>>>> main
 
             // Insert new album details
             const { data: album, error: albumError } = await supabase
