@@ -1,15 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FloatingDock } from "@/components/ui/floating-dock";
-import {
-    IconPhoto,
-    IconUsersGroup,
-    IconLayoutDashboard,
-    IconArrowNarrowUp,
-    IconTextScanAi,
-    IconCode,
-    IconUserCircle
-} from "@tabler/icons-react";
+
+import { navigationLinks } from "../../ui/dock-links"
 
 type Person = {
     id: string;
@@ -25,15 +18,7 @@ const People = () => {
     const [editingId, setEditingId] = useState<string | null>(null);
     const [name, setName] = useState("");
 
-    const links = [
-        { title: "feed", icon: <IconPhoto className="h-full w-full" />, href: "/gallery" },
-        { title: "people", icon: <IconUsersGroup className="h-full w-full" />, href: "/people" },
-        { title: "collections", icon: <IconLayoutDashboard className="h-full w-full" />, href: "/albums" },
-        { title: "upload", icon: <IconArrowNarrowUp className="h-full w-full" />, href: "/upload" },
-        { title: "AI mode", icon: <IconTextScanAi className="h-full w-full" />, href: "/uc" },
-        { title: "contribute", icon: <IconCode className="h-full w-full" />, href: "https://github.com/pxe-photos/pxephotos" },
-        { title: "user", icon: <IconUserCircle className="h-full w-full" />, href: "/profile" },
-    ];
+    
 
     const fetchPeople = async () => {
 
@@ -265,7 +250,7 @@ const People = () => {
 
             <div className="fixed bottom-12 left-1/2 -translate-x-1/2 z-50">
 
-                <FloatingDock items={links} />
+                <FloatingDock items={navigationLinks} />
 
             </div>
 
