@@ -48,8 +48,20 @@ export default function AlbumView() {
   const abortControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
+
     fetchAlbumDetails();
-    return () => stopSlideshow();
+
+    return () => {
+
+      stopSlideshow();
+
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
+
+    };
+
   }, [albumId]);
 
   useEffect(() => {
@@ -59,7 +71,7 @@ export default function AlbumView() {
       stopSlideshow();
     }
     return () => stopSlideshow();
-  }, [isPlaying, photos, currentIndex]);
+  }, [isPlaying, photos]);
 
   const fetchAlbumDetails = async () => {
     try {
@@ -99,7 +111,33 @@ export default function AlbumView() {
   };
 
   const togglePlay = () => {
+
+    if (isPlaying) {
+
+      // Pause slideshow
+      stopSlideshow();
+
+      // Pause background music
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+
+    } else {
+
+      // Resume slideshow
+      startSlideshow();
+
+      // Resume background music
+      if (audioRef.current) {
+        audioRef.current.play().catch((err) => {
+          console.log("Audio playback failed:", err);
+        });
+      }
+
+    }
+
     setIsPlaying(!isPlaying);
+
   };
 
   const handlePrev = () => {
@@ -273,7 +311,16 @@ export default function AlbumView() {
 
           )}
           <button
-            onClick={() => navigate("/albums")}
+            onClick={() => {
+
+              if (audioRef.current) {
+                audioRef.current.pause();
+                audioRef.current.currentTime = 0;
+              }
+
+              navigate("/albums");
+
+            }}
             className="p-3 rounded-full bg-zinc-900/60 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 hover:text-white transition"
           >
             <IconX className="h-6 w-6" />
