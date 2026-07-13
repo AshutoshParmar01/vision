@@ -88,7 +88,7 @@ const ProfilePage: React.FC = () => {
       <header className="border-b border-zinc-800 bg-zinc-900/50 backdrop-blur sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2 font-semibold tracking-tight text-sm">
-            <span>Pxe Photos</span>
+            <span>V I S I O N</span>
           </div>
           <button className="flex items-center gap-2 text-xs font-medium text-zinc-400 hover:text-zinc-200 transition-colors bg-zinc-900 border border-zinc-800 px-3 py-1.5 rounded-md hover:bg-zinc-800">
             <LogOut className="h-3.5 w-3.5" />

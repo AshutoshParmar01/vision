@@ -91,16 +91,16 @@ export function LampDemo() {
           className="mt-8 bg-linear-to-br from-slate-100 to-slate-600 py-4 bg-clip-text text-center text-4xl font-medium tracking-tight text-transparent md:text-7xl"
         >
           <EncryptedText
-            text="Pxe Photos"
+            text="V I S I O N"
             encryptedClassName="text-neutral-500"
-            revealedClassName="dark:text-white text-black"
+            revealedClassName="dark:text-white text-white"
             revealDelayMs={50}
           />
           <br />
           <EncryptedText
             text="Upload. Segregate. Breathe."
             encryptedClassName="text-neutral-500"
-            revealedClassName="dark:text-white text-black"
+            revealedClassName="dark:text-white text-white"
             revealDelayMs={50}
           />
         </motion.h1>
@@ -125,8 +125,7 @@ export function LampDemo() {
           transition={{ delay: 0.9, duration: 0.7 }}
           className="mt-6 max-w-md text-sm text-neutral-400 md:text-base"
         >
-          A calmer home for your camera roll. Upload once, and let Pxe do the
-          sorting, tagging, and de-duplicating for you.
+         Visual information storage indexing and organization network : V I S I O N 
         </motion.p>
       </div>
 
