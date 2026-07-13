@@ -6,6 +6,9 @@ An AI-powered, privacy-first photo organization and gallery application. **Pxe P
 
 ## ✨ Latest Features (July 2026)
 
+### live facial recognition 
+![alt text](image.png)
+
 ### 🎬 Album Video Slideshow Generation
 - **New Backend Endpoint:** `/albums/:albumId/video` - Generates MP4 videos from photo albums
 - **FFmpeg Integration:** Server-side video compilation with H.264 encoding
