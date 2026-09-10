@@ -1,6 +1,6 @@
-# Pxe Photos
+# VISION
 
-An AI-powered, privacy-first photo organization and gallery application. **Pxe Photos** automatically scans uploaded photos, detects faces, extracts high-dimensional biometric embeddings, clusters them into people groups, and organizes them into custom albums with music and video slideshow capabilities.
+An AI-powered, privacy-first photo organization and gallery application. **VISION** automatically scans uploaded photos, detects faces, extracts high-dimensional biometric embeddings, clusters them into people groups, and organizes them into custom albums with music and video slideshow capabilities.
 
 ---
 
@@ -118,7 +118,7 @@ Open your browser and navigate to the local address output by Vite (usually `htt
 
 ## 🧠 System Architecture & Data Flow
 
-Below is the workflow of **Pxe Photos** when a user uploads a new image:
+Below is the workflow of **VISION** when a user uploads a new image:
 
 ```mermaid
 sequenceDiagram
@@ -196,7 +196,7 @@ sequenceDiagram
 This repository is divided into three main components: `/web` (React client), `/server` (Express API server), and `/python` (Machine Learning services).
 
 ```
-pxephotos/
+VISION/
 ├── LICENSE
 ├── README.md                           # Main project documentation (this file)
 ├── index.html                          # Experimental HTML/CSS layout displaying a responsive photo grid
