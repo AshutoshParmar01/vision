@@ -6,8 +6,11 @@ An AI-powered, privacy-first photo organization and gallery application. **VISIO
 
 ## ✨ Latest Features (July 2026)
 
-### live facial recognition 
-![alt text](image.png)
+### live facial recognition
+- **Real-Time Webcam Recognition:** The new `/stream` page accesses your webcam and sends a captured frame to the `/api/recognize` endpoint every 100 ms
+- **Face Detection & Matching:** Each frame is processed to extract 512-dimensional face embeddings, which are compared against your existing people clusters using cosine similarity
+- **Live Overlay:** Detected faces are outlined directly on the video feed and labeled with the recognized person's name, or "Unknown" for unmatched faces
+- **Privacy-First:** Frames are processed transiently (temporary files are deleted immediately after recognition) and matching is scoped to the signed-in user's own people
 
 ### 🎬 Album Video Slideshow Generation
 - **New Backend Endpoint:** `/albums/:albumId/video` - Generates MP4 videos from photo albums
